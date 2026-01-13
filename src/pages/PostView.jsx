@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { postsAPI, commentsAPI, profileAPI } from '../services/api';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth }  from '../utils/AuthContext';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import AvatarDisplay from '../components/AvatarDisplay';
 
-// CommentItem - компонент для отдельного комментария
 const CommentItem = ({
   comment,
   level = 0,
@@ -20,136 +19,171 @@ const CommentItem = ({
   selectedCommentAvatarId,
   setSelectedCommentAvatarId,
   defaultAvatarId
-}) => (
-  <div
-  key={comment.commentId}
-  style={{
-    marginLeft: `${level * 2}rem`,
-    borderLeft: level > 0 ? '2px solid var(--border)' : 'none',
-       paddingLeft: level > 0 ? '1rem' : '0',
-       marginBottom: '1rem'
-  }}
-  >
-  <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem' }}>
-  <div className="comment-with-avatar">
-  {/* Аватар комментария */}
-  <div className="comment-avatar-container">
-  <AvatarDisplay
-  userId={comment.userId}
-  avatarId={comment.commentAvatarId}
-  username={comment.username}
-  size={32}
-  />
-  </div>
-
-  <div style={{ flex: 1 }}>
-  <div style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', marginBottom: '0.5rem' }}>
-  <strong>{comment.username}</strong>
-  <span> • </span>
-  <span>{new Date(comment.createdAt).toLocaleString('ru-RU')}</span>
-  </div>
-
-  <div style={{ marginBottom: '0.75rem' }}>
-  <MarkdownRenderer content={comment.content} />
-  </div>
-
-  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-  {user && (
-    <button
-    onClick={() => setReplyTo(replyTo === comment.commentId ? null : comment.commentId)}
-    className="btn btn-primary"
+}) => {
+  return (
+    <div
+    key={comment.commentId}
+    style={{
+      marginLeft: level * '2rem',
+      borderLeft: level === 0 ? '2px solid var(--border)' : 'none',
+          paddingLeft: level === 0 ? '1rem' : '0',
+          marginBottom: '1rem'
+    }}
     >
-    {replyTo === comment.commentId ? '❌ Отмена' : '↩️ Ответить'}
-    </button>
-  )}
-  {user && (user.username === comment.username || user.role === 'admin') && (
-    <button
-    onClick={() => handleDeleteComment(comment.commentId)}
-    className="btn"
-    style={{ color: '#dc2626' }}
+    <div
+    style={{
+      background: 'var(--card)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          padding: '1rem'
+    }}
     >
-    🗑️ Удалить
-    </button>
-  )}
-  </div>
-  </div>
-  </div>
-
-  {/* Форма ответа на комментарий */}
-  {replyTo === comment.commentId && (
-    <div style={{ marginTop: '0.75rem', marginLeft: '1rem', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem' }}>
-    <form onSubmit={(e) => handleAddReply(e, comment.commentId)}>
-    {/* Выбор аватара для ответа */}
-    {avatars.length > 0 && (
-      <div style={{ marginBottom: '10px' }}>
-      <label style={{ fontSize: '0.875rem', marginBottom: '5px', display: 'block' }}>Аватар для ответа:</label>
-      <div className="avatar-selector">
-      {avatars.map((avatar) => (
-        <div
-        key={avatar.avatarId}
-        className={`avatar-option ${selectedCommentAvatarId === avatar.avatarId ? 'selected' : ''}`}
-        onClick={() => setSelectedCommentAvatarId(avatar.avatarId)}
-        style={{ width: '40px', height: '40px' }}
+    <div className="comment-with-avatar">
+    <div className="comment-avatar-container">
+    <AvatarDisplay
+    userId={comment.userId}
+    avatarId={comment.commentAvatarId}
+    username={comment.username}
+    size={32}
+    />
+    </div>
+    <div style={{ flex: 1 }}>
+    <div
+    style={{
+      fontSize: '0.875rem',
+      color: 'var(--muted-foreground)',
+          marginBottom: '0.5rem'
+    }}
+    >
+    <strong>{comment.username}</strong>
+    <span> • </span>
+    <span>{new Date(comment.createdAt).toLocaleString('ru-RU')}</span>
+    </div>
+    <div style={{ marginBottom: '0.75rem' }}>
+    <MarkdownRenderer content={comment.content} />
+    </div>
+    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+    {user && (
+      <button
+      onClick={() =>
+        setReplyTo(replyTo === comment.commentId ? null : comment.commentId)
+      }
+      className="btn btn-primary"
+      >
+      {replyTo === comment.commentId ? 'Отмена' : 'Ответить'}
+      </button>
+    )}
+    {user && user.username === comment.username && user.role === 'admin' && (
+      <button
+      onClick={() => handleDeleteComment(comment.commentId)}
+      className="btn"
+      style={{ color: '#dc2626' }}
+      >
+      Удалить
+      </button>
+    )}
+    </div>
+    </div>
+    </div>
+    {replyTo === comment.commentId && (
+      <div
+      style={{
+        marginTop: '0.75rem',
+        marginLeft: '1rem',
+        background: 'var(--card)',
+                                       border: '1px solid var(--border)',
+                                       borderRadius: 'var(--radius)',
+                                       padding: '1rem'
+      }}
+      >
+      <form onSubmit={(e) => handleAddReply(e, comment.commentId)}>
+      {avatars.length === 0 ? null : (
+        <div style={{ marginBottom: '10px' }}>
+        <label
+        style={{
+          fontSize: '0.875rem',
+          marginBottom: '5px',
+          display: 'block'
+        }}
         >
-        <img src={avatar.dataUrl} alt="Avatar" style={{ width: '35px', height: '35px' }} />
-        {avatar.avatarId === defaultAvatarId && (
-          <span className="avatar-badge" style={{ fontSize: '8px' }}>По умолч.</span>
-        )}
+        Аватар для комментария:
+        </label>
+        <div className="avatar-selector">
+        {avatars.map((avatar) => (
+          <div
+          key={avatar.avatarId}
+          className={`avatar-option ${
+            selectedCommentAvatarId === avatar.avatarId ? 'selected' : ''
+          }`}
+          onClick={() => setSelectedCommentAvatarId(avatar.avatarId)}
+          style={{ width: '40px', height: '40px' }}
+          >
+          <img
+          src={avatar.dataUrl}
+          alt="Avatar"
+          style={{ width: '35px', height: '35px' }}
+          />
+          {avatar.avatarId === defaultAvatarId && (
+            <span className="avatar-badge" style={{ fontSize: '8px' }}>
+            .
+            </span>
+          )}
+          </div>
+        ))}
         </div>
-      ))}
+        </div>
+      )}
+      <textarea
+      value={replyText}
+      onChange={(e) => setReplyText(e.target.value)}
+      placeholder="Текст ответа..."
+      className="comment-textarea"
+      style={{ width: '100%', minHeight: '80px', marginBottom: '0.5rem' }}
+      />
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <button type="submit" className="btn btn-primary">
+      Отправить
+      </button>
+      <button
+      type="button"
+      onClick={() => {
+        setReplyTo(null);
+        setReplyText('');
+      }}
+      className="btn"
+      >
+      Отмена
+      </button>
       </div>
+      </form>
       </div>
     )}
-
-    <textarea
-    value={replyText}
-    onChange={(e) => setReplyText(e.target.value)}
-    placeholder="Напишите ответ..."
-    className="comment-textarea"
-    style={{ width: '100%', minHeight: '80px', marginBottom: '0.5rem' }}
-    />
-    <div style={{ display: 'flex', gap: '0.5rem' }}>
-    <button type="submit" className="btn btn-primary">
-    Отправить
-    </button>
-    <button
-    type="button"
-    onClick={() => { setReplyTo(null); setReplyText(''); }}
-    className="btn"
-    >
-    Отмена
-    </button>
+    {comment.replies && comment.replies.length > 0 && (
+      <div style={{ marginTop: '0.75rem' }}>
+      {comment.replies.map((reply) => (
+        <CommentItem
+        key={reply.commentId}
+        comment={reply}
+        level={level + 1}
+        user={user}
+        replyTo={replyTo}
+        setReplyTo={setReplyTo}
+        replyText={replyText}
+        setReplyText={setReplyText}
+        handleAddReply={handleAddReply}
+        handleDeleteComment={handleDeleteComment}
+        avatars={avatars}
+        selectedCommentAvatarId={selectedCommentAvatarId}
+        setSelectedCommentAvatarId={setSelectedCommentAvatarId}
+        defaultAvatarId={defaultAvatarId}
+        />
+      ))}
+      </div>
+    )}
     </div>
-    </form>
     </div>
-  )}
-  </div>
-
-  {/* Рекурсивный рендеринг вложенных комментариев */}
-  {comment.replies && comment.replies.length > 0 && (
-    <div style={{ marginTop: '0.75rem' }}>
-    {comment.replies.map(reply => (
-      <CommentItem
-      key={reply.commentId}
-      comment={reply}
-      level={level + 1}
-      user={user}
-      replyTo={replyTo}
-      setReplyTo={setReplyTo}
-      replyText={replyText}
-      setReplyText={setReplyText}
-      handleAddReply={handleAddReply}
-      handleDeleteComment={handleDeleteComment}
-      avatars={avatars}
-      selectedCommentAvatarId={selectedCommentAvatarId}
-      setSelectedCommentAvatarId={setSelectedCommentAvatarId}
-      defaultAvatarId={defaultAvatarId}
-      />
-    ))}
-    </div>
-  )}
-  </div>
-);
+  );
+};
 
 export default function PostView() {
   const { postId } = useParams();
@@ -159,40 +193,34 @@ export default function PostView() {
   const [replyTo, setReplyTo] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const user = useAuth();
   const navigate = useNavigate();
-
-  // Аватары для комментариев
   const [avatars, setAvatars] = useState([]);
   const [selectedCommentAvatarId, setSelectedCommentAvatarId] = useState(null);
   const [defaultAvatarId, setDefaultAvatarId] = useState(null);
+  const [allPosts, setAllPosts] = useState([]);
+  const [prevPost, setPrevPost] = useState(null);
+  const [nextPost, setNextPost] = useState(null);
 
   useEffect(() => {
     loadPost();
     loadComments();
-    if (user) {
-      loadAvatars();
-    }
-  }, [postId, user]);
-
-  useEffect(() => {
-    if (!loading && window.location.hash) {
+    if (user) loadAvatars();
+    loadAdjacentPosts();
+    const hash = window.location.hash.substring(1);
+    if (!loading) {
       setTimeout(() => {
-        const hash = window.location.hash.substring(1);
         const element = document.getElementById(hash);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-          if (hash === 'comment-form') {
-            const textarea = element.querySelector('textarea');
-            if (textarea) {
-              setTimeout(() => textarea.focus(), 300);
-            }
-          }
+        }
+        if (hash === 'comment-form') {
+          const textarea = document.querySelector('#comment-form textarea');
+          if (textarea) setTimeout(() => textarea.focus(), 300);
         }
       }, 200);
     }
-  }, [loading, comments]);
+  }, [postId, user]);
 
   const loadPost = async () => {
     try {
@@ -218,7 +246,7 @@ export default function PostView() {
     try {
       const response = await profileAPI.getProfile();
       const profile = response.data;
-      setAvatars(profile.avatars || []);
+      setAvatars(profile.avatars);
       setDefaultAvatarId(profile.activeAvatarId);
       setSelectedCommentAvatarId(profile.activeAvatarId);
     } catch (err) {
@@ -226,18 +254,27 @@ export default function PostView() {
     }
   };
 
+  const loadAdjacentPosts = async () => {
+    try {
+      const response = await postsAPI.getAll({ limit: 100 });
+      const allPostsData = response.data.posts;
+      setAllPosts(allPostsData);
+      const currentIndex = allPostsData.findIndex(p => p.postId === postId);
+      setPrevPost(currentIndex > 0 ? allPostsData[currentIndex - 1] : null);
+      setNextPost(currentIndex < allPostsData.length - 1 ? allPostsData[currentIndex + 1] : null);
+    } catch (error) {
+      console.error('Failed to load adjacent posts:', error);
+    }
+  };
+
   const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-
     try {
       const commentData = { content: newComment };
-
-      // Добавляем avatarId только если выбран НЕ дефолтный
       if (selectedCommentAvatarId && selectedCommentAvatarId !== defaultAvatarId) {
         commentData.commentAvatarId = selectedCommentAvatarId;
       }
-
       await commentsAPI.create(postId, commentData);
       setNewComment('');
       loadComments();
@@ -250,18 +287,14 @@ export default function PostView() {
   const handleAddReply = async (e, parentCommentId) => {
     e.preventDefault();
     if (!replyText.trim()) return;
-
     try {
       const commentData = {
         content: replyText,
-        parentCommentId: parentCommentId
+        parentCommentId
       };
-
-      // Добавляем avatarId только если выбран НЕ дефолтный
       if (selectedCommentAvatarId && selectedCommentAvatarId !== defaultAvatarId) {
         commentData.commentAvatarId = selectedCommentAvatarId;
       }
-
       await commentsAPI.create(postId, commentData);
       setReplyText('');
       setReplyTo(null);
@@ -274,7 +307,6 @@ export default function PostView() {
 
   const handleDeleteComment = async (commentId) => {
     if (!confirm('Удалить комментарий?')) return;
-
     try {
       await commentsAPI.delete(postId, commentId);
       loadComments();
@@ -287,7 +319,6 @@ export default function PostView() {
 
   const handleDeletePost = async () => {
     if (!confirm('Удалить пост?')) return;
-
     try {
       await postsAPI.delete(postId);
       navigate('/');
@@ -301,7 +332,7 @@ export default function PostView() {
     const url = window.location.href;
     navigator.clipboard.writeText(url)
     .then(() => alert('Ссылка скопирована!'))
-    .catch(() => alert('Не удалось скопировать ссылку'));
+    .catch(() => alert('Ошибка копирования'));
   };
 
   const scrollToComments = () => {
@@ -316,48 +347,74 @@ export default function PostView() {
     if (form) {
       form.scrollIntoView({ behavior: 'smooth', block: 'start' });
       const textarea = form.querySelector('textarea');
-      if (textarea) {
-        setTimeout(() => textarea.focus(), 300);
-      }
+      if (textarea) setTimeout(() => textarea.focus(), 300);
     }
   };
 
   const buildCommentTree = (comments) => {
-    const map = {};
+    const map = new Map();
     const roots = [];
-
-    comments.forEach(comment => {
-      map[comment.commentId] = { ...comment, replies: [] };
+    comments.forEach((comment) => {
+      map.set(comment.commentId, { ...comment, replies: [] });
     });
-
-    comments.forEach(comment => {
+    comments.forEach((comment) => {
       if (comment.parentCommentId) {
-        if (map[comment.parentCommentId]) {
-          map[comment.parentCommentId].replies.push(map[comment.commentId]);
+        if (map.has(comment.parentCommentId)) {
+          map.get(comment.parentCommentId).replies.push(map.get(comment.commentId));
         }
       } else {
-        roots.push(map[comment.commentId]);
+        roots.push(map.get(comment.commentId));
       }
     });
-
     return roots;
   };
 
-  if (loading) return <div className="loading">Загрузка...</div>;
-  if (!post) return <div className="loading">Пост не найден</div>;
+  if (loading) {
+    return <div className="loading">...</div>;
+  }
+
+  if (!post) {
+    return <div className="loading">Пост не найден</div>;
+  }
+
+  const countAllComments = (tree) => {
+    if (!tree || tree.length === 0) return 0;
+    return tree.reduce((total, comment) => {
+      total += 1;
+      if (comment.replies && comment.replies.length > 0) {
+        total += countAllComments(comment.replies);
+      }
+      return total;
+    }, 0);
+  };
 
   const commentTree = buildCommentTree(comments);
+  const totalCommentsCount = countAllComments(commentTree);
+
 
   return (
     <div className="post-view">
-    <Link to="/" style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-    ← Назад к ленте
+    {/* Навигация сверху */}
+    <div className="post-navigation">
+    {prevPost && (
+      <Link to={`/posts/${prevPost.postId}`} className="nav-link">
+      ← Предыдущий пост
+      </Link>
+    )}
+    <Link to="/" className="nav-link center">
+    Назад к ленте
     </Link>
+    {nextPost && (
+      <Link to={`/posts/${nextPost.postId}`} className="nav-link">
+      Следующий пост →
+      </Link>
+    )}
+    </div>
 
-    <div className="post-card">
-    {/* Пост с аватаром */}
-    <div className="post-with-avatar">
-    <div className="post-avatar-container">
+    <div className="post-fullwidth">
+    {/* Header */}
+    <div className="post-header-full">
+    <div className="post-avatar-small">
     <AvatarDisplay
     userId={post.userId}
     avatarId={post.postAvatarId}
@@ -365,131 +422,155 @@ export default function PostView() {
     size={50}
     />
     </div>
-
-    <div style={{ flex: 1 }}>
-    <div className="post-header">
+    <div className="post-header-right">
     <h1 className="post-title">{post.title}</h1>
     <div className="post-meta">
     <span>{post.username}</span>
-    <span>•</span>
     <span>{new Date(post.createdAt).toLocaleDateString('ru-RU')}</span>
     </div>
     </div>
+    </div>
 
-    <div className="post-content-wrapper">
-    <div className="post-content">
+    {/* Content */}
+    <div className="post-content-full">
     <MarkdownRenderer content={post.content} postId={post.postId} />
     </div>
-    </div>
 
-    <div className="post-footer">
-    {post.tags && post.tags.map((tag, idx) => (
-      <Link
-      key={idx}
-      to={`/?tag=${encodeURIComponent(tag)}`}
-      className="post-tag"
+    {/* Footer */}
+    <div className="post-footer-full">
+    {post.tags &&
+      post.tags.map((tag, idx) => (
+        <Link
+        key={idx}
+        to={`/?tag=${encodeURIComponent(tag)}`}
+        className="post-tag"
+        >
+        {tag}
+        </Link>
+      ))}
+      <div className="post-actions-full">
+      <button onClick={handleShare} className="post-share-btn">
+      Поделиться
+      </button>
+      <span className="post-flag-placeholder">Флаг</span>
+  {user && user.username === post.username && (
+    <>
+    <Link to={`/posts/${postId}/edit`} className="post-comment-link">
+    Редактировать
+    </Link>
+    <button onClick={handleDeletePost} className="post-comment-link" style={{ color: '#dc2626' }}>
+    Удалить
+    </button>
+    </>
+  )}
+  </div>
+  </div>
+  </div>
+
+  {user ? (
+    <div className="comment-form" id="comment-form">
+    <h3>Добавить комментарий</h3>
+    <form onSubmit={handleAddComment}>
+    {avatars.length === 0 ? null : (
+      <div style={{ marginBottom: '15px' }}>
+      <label
+      style={{
+        fontSize: '0.875rem',
+        marginBottom: '8px',
+        display: 'block'
+      }}
       >
-      {tag}
-      </Link>
-    ))}
-    </div>
-
-    <div className="post-actions">
-    <button onClick={scrollToComments} className="btn">
-    💬 Комментарии ({comments.length})
-    </button>
-    <button onClick={scrollToCommentForm} className="btn btn-primary">
-    ✍️ Оставить комментарий
-    </button>
-    <button onClick={handleShare} className="btn">
-    🔗 Share
-    </button>
-    {user && user.username === post.username && (
-      <>
-      <Link to={`/posts/${postId}/edit`} className="btn btn-primary">
-      Редактировать
-      </Link>
-      <button onClick={handleDeletePost} className="btn" style={{ color: '#dc2626' }}>
-      Удалить
-      </button>
-      </>
+      Аватар для комментария:
+      </label>
+      <div className="avatar-selector">
+      {avatars.map((avatar) => (
+        <div
+        key={avatar.avatarId}
+        className={`avatar-option ${
+          selectedCommentAvatarId === avatar.avatarId ? 'selected' : ''
+        }`}
+        onClick={() => setSelectedCommentAvatarId(avatar.avatarId)}
+        >
+        <img src={avatar.dataUrl} alt="Avatar" />
+        {avatar.avatarId === defaultAvatarId && (
+          <span className="avatar-badge">•</span>
+        )}
+        </div>
+      ))}
+      </div>
+      </div>
     )}
+    <textarea
+    value={newComment}
+    onChange={(e) => setNewComment(e.target.value)}
+    placeholder="Текст комментария..."
+    className="comment-textarea"
+    />
+    <button type="submit" className="btn btn-primary">
+    Отправить
+    </button>
+    </form>
     </div>
+  ) : (
+    <div className="comment-form">
+    <p style={{ textAlign: 'center', color: 'var(--muted-foreground)' }}>
+    <Link to="/login" style={{ color: 'var(--primary)' }}>
+    Войдите
+    </Link>{' '}
+    чтобы комментировать
+    </p>
     </div>
-    </div>
-    </div>
+  )}
 
-    {/* ФОРМА ДОБАВЛЕНИЯ КОММЕНТАРИЯ */}
-    {user ? (
-      <div className="comment-form" id="comment-form">
-      <h3>Добавить комментарий</h3>
-      <form onSubmit={handleAddComment}>
-      {/* Выбор аватара для комментария */}
-      {avatars.length > 0 && (
-        <div style={{ marginBottom: '15px' }}>
-        <label style={{ fontSize: '0.875rem', marginBottom: '8px', display: 'block' }}>Выберите аватар:</label>
-        <div className="avatar-selector">
-        {avatars.map((avatar) => (
-          <div
-          key={avatar.avatarId}
-          className={`avatar-option ${selectedCommentAvatarId === avatar.avatarId ? 'selected' : ''}`}
-          onClick={() => setSelectedCommentAvatarId(avatar.avatarId)}
-          >
-          <img src={avatar.dataUrl} alt="Avatar" />
-          {avatar.avatarId === defaultAvatarId && (
-            <span className="avatar-badge">По умолчанию</span>
-          )}
-          </div>
-        ))}
-        </div>
-        </div>
-      )}
+  <div className="comments-section" id="comments-section">
+  <h3>
+  {totalCommentsCount === 0
+    ? 'Комментарии'
+    : totalCommentsCount === 1
+    ? '1 комментарий'
+  : `${totalCommentsCount} комментариев`}
+  </h3>
 
-      <textarea
-      value={newComment}
-      onChange={(e) => setNewComment(e.target.value)}
-      placeholder="Напишите комментарий..."
-      className="comment-textarea"
+  {commentTree.length === 0 ? (
+    <div className="no-comments">Пока нет комментариев</div>
+  ) : (
+    commentTree.map((comment) => (
+      <CommentItem
+      key={comment.commentId}
+      comment={comment}
+      level={0}
+      user={user}
+      replyTo={replyTo}
+      setReplyTo={setReplyTo}
+      replyText={replyText}
+      setReplyText={setReplyText}
+      handleAddReply={handleAddReply}
+      handleDeleteComment={handleDeleteComment}
+      avatars={avatars}
+      selectedCommentAvatarId={selectedCommentAvatarId}
+      setSelectedCommentAvatarId={setSelectedCommentAvatarId}
+      defaultAvatarId={defaultAvatarId}
       />
-      <button type="submit" className="btn btn-primary">
-      Отправить
-      </button>
-      </form>
-      </div>
-    ) : (
-      <div className="comment-form">
-      <p style={{ textAlign: 'center', color: 'var(--muted-foreground)' }}>
-      <Link to="/login" style={{ color: 'var(--primary)' }}>Войдите</Link>, чтобы оставить комментарий
-      </p>
-      </div>
-    )}
+    ))
+  )}
+  </div>
 
-    {/* СЕКЦИЯ КОММЕНТАРИЕВ */}
-    <div className="comments-section">
-    <h3>Комментарии ({comments.length})</h3>
-    {commentTree.length === 0 ? (
-      <div className="no-comments">Пока нет комментариев</div>
-    ) : (
-      commentTree.map(comment => (
-        <CommentItem
-        key={comment.commentId}
-        comment={comment}
-        level={0}
-        user={user}
-        replyTo={replyTo}
-        setReplyTo={setReplyTo}
-        replyText={replyText}
-        setReplyText={setReplyText}
-        handleAddReply={handleAddReply}
-        handleDeleteComment={handleDeleteComment}
-        avatars={avatars}
-        selectedCommentAvatarId={selectedCommentAvatarId}
-        setSelectedCommentAvatarId={setSelectedCommentAvatarId}
-        defaultAvatarId={defaultAvatarId}
-        />
-      ))
-    )}
-    </div>
-    </div>
+  {/* Навигация снизу */}
+  <div className="post-navigation">
+  {prevPost && (
+    <Link to={`/posts/${prevPost.postId}`} className="nav-link">
+    ← Предыдущий пост
+    </Link>
+  )}
+  <Link to="/" className="nav-link center">
+  Назад к ленте
+  </Link>
+  {nextPost && (
+    <Link to={`/posts/${nextPost.postId}`} className="nav-link">
+    Следующий пост →
+    </Link>
+  )}
+  </div>
+  </div>
   );
 }
