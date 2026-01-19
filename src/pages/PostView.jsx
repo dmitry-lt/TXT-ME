@@ -154,8 +154,76 @@ const CommentItem = ({
 
     {/* Reply form - существующий код без изменений */}
     {replyTo === comment.commentId && (
-      <div style={{ marginTop: '0.75rem', marginLeft: '1rem', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '1rem' }}>
-      {/* ... ваш существующий код формы ответа ... */}
+      <div className="reply-form">
+      <form onSubmit={(e) => handleAddReply(e, comment.commentId)}>
+      {avatars.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+        <label style={{ fontSize: '0.875rem', marginBottom: '5px', display: 'block' }}>
+        Аватар для комментария:
+        </label>
+        <div className="avatar-selector">
+        {avatars.map((avatar) => (
+          <div
+          key={avatar.avatarId}
+          className={`avatar-option ${selectedCommentAvatarId === avatar.avatarId ? 'selected' : ''}`}
+          onClick={() => setSelectedCommentAvatarId(avatar.avatarId)}
+          style={{ width: '40px', height: '40px' }}
+          >
+          <img
+          src={avatar.dataUrl}
+          alt="Avatar"
+          style={{ width: '35px', height: '35px' }}
+          />
+          {avatar.avatarId === defaultAvatarId && (
+            <span className="avatar-badge" style={{ fontSize: '8px' }}>
+            ✓
+            </span>
+          )}
+          </div>
+        ))}
+        <div
+        className={`avatar-option ${selectedCommentAvatarId === null ? 'selected' : ''}`}
+        onClick={() => setSelectedCommentAvatarId(null)}
+        style={{ width: '40px', height: '40px' }}
+        >
+        <div className="avatar-none" style={{ fontSize: '8px' }}>
+        Без аватара
+        </div>
+        </div>
+        </div>
+        </div>
+      )}
+
+      <textarea
+      value={replyText}
+      onChange={(e) => setReplyText(e.target.value)}
+      placeholder="Текст ответа..."
+      className="comment-textarea"
+      style={{ width: '100%', minHeight: '80px', marginBottom: '0.5rem' }}
+      disabled={isLoading}
+      />
+
+      <div className="comment-actions" style={{ display: 'flex', gap: '0.5rem' }}>
+      <button
+      type="submit"
+      className="btn btn-primary"
+      disabled={isLoading || !replyText.trim()}
+      >
+      {isLoading ? 'Отправка...' : 'Отправить'}
+      </button>
+      <button
+      type="button"
+      onClick={() => {
+        setReplyTo(null);
+        setReplyText('');
+      }}
+      className="btn btn-secondary"
+      disabled={isLoading}
+      >
+      Отмена
+      </button>
+      </div>
+      </form>
       </div>
     )}
 
