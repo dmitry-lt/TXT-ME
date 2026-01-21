@@ -36,7 +36,8 @@ const backendRoutes = [
   ['DELETE', '/admin/users/profile/avatar/:avatarId'],
 
   // Public user data
-  ['GET', '/users/:userId/avatar'],
+  ['GET', '/admin/users/:userId/avatars/:avatarId'],
+  ['GET', '/admin/users/:userId/avatars/active'],
 ];
 
 // Frontend API calls - must match backend
@@ -66,7 +67,8 @@ const frontendAPICalls = [
   ['POST', '/admin/users/profile/avatar', 'profileAPI.addAvatar'],
   ['DELETE', '/admin/users/profile/avatar/:avatarId', 'profileAPI.deleteAvatar'],
   ['PUT', '/admin/users/profile/avatar/active', 'profileAPI.setActiveAvatar'],
-  ['GET', '/users/:userId/avatar', 'profileAPI.getUserAvatar'],
+  ['GET', '/admin/users/:userId/avatars/:avatarId', 'profileAPI.getUserAvatar'],
+  ['GET', '/admin/users/:userId/avatars/active', 'profileAPI.getUserAvatar(null)'],
 ];
 
 function normalizeRoute(route) {
@@ -109,7 +111,7 @@ describe('API Routes Validation', () => {
       '/auth/login',
       '/posts/:id/comments',
       '/admin/users/profile',
-      '/users/:userId/avatar',
+      '/admin/users/:userId/avatars',
     ];
 
     for (const pattern of expectedPatterns) {

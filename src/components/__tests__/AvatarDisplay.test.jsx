@@ -62,21 +62,17 @@ describe('AvatarDisplay', () => {
       });
     });
 
-    it('finds specific avatarId in avatars array', async () => {
+    it('passes avatarId to API and displays returned avatar', async () => {
       profileAPI.getUserAvatar.mockResolvedValue({
-        data: {
-          avatars: [
-            { avatarId: 'av1', dataUrl: 'data:1' },
-            { avatarId: 'av2', dataUrl: 'data:2' },
-          ],
-        },
+        data: { avatarDataUrl: 'data:image/png;base64,specific' },
       });
 
       render(<AvatarDisplay userId="123" avatarId="av2" username="testuser" />);
 
       await waitFor(() => {
+        expect(profileAPI.getUserAvatar).toHaveBeenCalledWith('123', 'av2');
         const img = screen.getByAltText("testuser's avatar");
-        expect(img).toHaveAttribute('src', 'data:2');
+        expect(img).toHaveAttribute('src', 'data:image/png;base64,specific');
       });
     });
   });
@@ -104,6 +100,43 @@ describe('AvatarDisplay', () => {
       await waitFor(() => {
         const defaultAvatar = document.querySelector('.avatar-default');
         expect(defaultAvatar).toBeInTheDocument();
+      });
+    });
+
+    it('falls back to user default avatar when specific avatarId returns 404', async () => {
+      const error404 = new Error('Not found');
+      error404.response = { status: 404 };
+      profileAPI.getUserAvatar
+        .mockRejectedValueOnce(error404)
+        .mockResolvedValueOnce({
+          data: { avatarDataUrl: 'data:image/png;base64,default123' },
+        });
+
+      render(<AvatarDisplay userId="123" avatarId="deleted-av" username="testuser" />);
+
+      await waitFor(() => {
+        expect(profileAPI.getUserAvatar).toHaveBeenCalledTimes(2);
+        expect(profileAPI.getUserAvatar).toHaveBeenNthCalledWith(1, '123', 'deleted-av');
+        expect(profileAPI.getUserAvatar).toHaveBeenNthCalledWith(2, '123', null);
+        const img = screen.getByAltText("testuser's avatar");
+        expect(img).toHaveAttribute('src', 'data:image/png;base64,default123');
+      });
+    });
+
+    it('shows letter fallback when both specific and default avatar requests fail', async () => {
+      const error404 = new Error('Not found');
+      error404.response = { status: 404 };
+      profileAPI.getUserAvatar
+        .mockRejectedValueOnce(error404)
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      render(<AvatarDisplay userId="123" avatarId="deleted-av" username="testuser" />);
+
+      await waitFor(() => {
+        expect(profileAPI.getUserAvatar).toHaveBeenCalledTimes(2);
+        const defaultAvatar = document.querySelector('.avatar-default');
+        expect(defaultAvatar).toBeInTheDocument();
+        expect(defaultAvatar).toHaveTextContent('T');
       });
     });
 
