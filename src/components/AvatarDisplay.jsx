@@ -10,26 +10,23 @@ function AvatarDisplay({ userId, avatarId, username, size = 40 }) {
 
     const loadAvatar = async () => {
       try {
-        const response = await profileAPI.getUserAvatar(userId);
-        const userData = response.data;
-
-        // Если указан конкретный avatarId - ищем его
-        if (avatarId && userData.avatars && userData.avatars.length > 0) {
-          const avatar = userData.avatars.find(a => a.avatarId === avatarId);
-          if (avatar && avatar.dataUrl) {
-            if (isActive) {
-              setAvatarUrl(avatar.dataUrl);
-              setLoading(false);
-            }
-            return;
-          }
-        }
-
-        // Иначе берём активный аватар пользователя
-        if (isActive && userData.avatarDataUrl) {
-          setAvatarUrl(userData.avatarDataUrl);
+        const response = await profileAPI.getUserAvatar(userId, avatarId);
+        if (isActive && response.data.avatarDataUrl) {
+          setAvatarUrl(response.data.avatarDataUrl);
         }
       } catch (err) {
+        // If specific avatarId requested but not found, try fetching user's default avatar
+        if (avatarId && err.response?.status === 404) {
+          try {
+            const fallbackResponse = await profileAPI.getUserAvatar(userId, null);
+            if (isActive && fallbackResponse.data.avatarDataUrl) {
+              setAvatarUrl(fallbackResponse.data.avatarDataUrl);
+              return;
+            }
+          } catch (fallbackErr) {
+            console.error('Failed to load fallback avatar:', fallbackErr);
+          }
+        }
         console.error('Failed to load avatar for userId:', userId, err);
       } finally {
         if (isActive) {
