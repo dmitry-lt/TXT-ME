@@ -248,6 +248,9 @@ export default function PostsV2() {
     </div>
 
     <div className="user-section">
+    <Link to="/" className="sidebar-nav-link">
+        Лента V1
+    </Link>
     {user ? (
       <div>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
@@ -285,9 +288,6 @@ export default function PostsV2() {
     )}
     </div>
 
-    <div className="navigation-links" style={{ padding: '1rem' }}>
-        <Link to="/" style={{ display: 'block', marginBottom: '0.5rem' }}>Вернуться на старую главную</Link>
-    </div>
     </aside>
     </div>
   );

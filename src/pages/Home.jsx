@@ -204,8 +204,8 @@ export default function Home() {
     </div>
 
     <div className="user-section">
-    <Link to="/posts" className="btn btn-secondary" style={{ width: '100%', marginBottom: '1rem', textAlign: 'center', backgroundColor: '#f0f0f0' }}>
-      Попробовать новую ленту (V2)
+    <Link to="/posts" className="sidebar-nav-link">
+      Лента V2
     </Link>
     {user ? (
       <div>
